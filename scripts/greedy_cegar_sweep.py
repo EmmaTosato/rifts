@@ -19,7 +19,6 @@ live (queriable concurrently by the refinement sweepers).
 from __future__ import annotations
 
 import argparse
-import csv
 import io
 import json
 import os
@@ -41,11 +40,10 @@ from drifts.obdd import BootstrapConfig, OBDDContext
 from drifts.sklearn_compat import Def3Forest
 from drifts.sklearn_io import from_sklearn
 
-from load_ucr import load_dataset  # noqa: E402
+from load_local import load_dataset  # noqa: E402
 
 
 MODELS = REPO / "models"
-ORDER = REPO / "experiments_order" / "included_topo.csv"
 OUT_DIR = REPO / "sweeps" / "maximal_reasons"
 OUT_DB = OUT_DIR / "sweep.db"
 
@@ -107,8 +105,8 @@ def _now_utc():
 
 
 def _datasets():
-    with ORDER.open() as f:
-        return [r["dataset"] for r in csv.DictReader(f) if r.get("dataset")]
+    # Local mode: each model is a <token>.joblib in current-state/models/.
+    return sorted(p.stem for p in MODELS.glob("*.joblib"))
 
 
 def _row_parquet_bytes(row: dict) -> bytes:

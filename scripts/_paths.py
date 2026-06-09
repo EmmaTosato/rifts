@@ -12,6 +12,7 @@ resolve regardless of the current working directory.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -36,7 +37,10 @@ def _find_rifts_root(start: Path) -> Path:
 
 
 RIFTS_ROOT: Path = _find_rifts_root(Path(__file__).parent)
-STATE_ROOT: Path = RIFTS_ROOT / "current-state"
+# STATE_ROOT is the working folder (models/, sweeps/). Override with
+# RIFTS_STATE_ROOT to keep one working state — and one sweep.db — per session.
+STATE_ROOT: Path = Path(os.environ["RIFTS_STATE_ROOT"]).resolve() \
+    if os.environ.get("RIFTS_STATE_ROOT") else RIFTS_ROOT / "current-state"
 FACTORY_ROOT: Path = RIFTS_ROOT / "factory-setting"
 DATA_ROOT: Path = RIFTS_ROOT / "dataset" / "Univariate_ts"
 SRC_ROOT: Path = RIFTS_ROOT / "src"
