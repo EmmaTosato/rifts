@@ -1,0 +1,47 @@
+# RIfTS — Python dependencies
+#
+# Targets Python 3.10–3.12. Version pins are lower bounds on the most recent
+# releases the pipeline has been run against; newer compatible releases are
+# allowed. Install with:
+#
+#     pip install -r requirements.txt
+#
+# ---------------------------------------------------------------------------
+# Core: algorithm (src/), sweeps, training, dashboard
+# ---------------------------------------------------------------------------
+
+# Numerics / data
+numpy>=2.1,<3
+scipy>=1.15,<2          # the CEGAR vote-MILP uses scipy.optimize.milp (bundled HiGHS)
+pandas>=2.2,<3
+joblib>=1.5             # (de)serialise the tuned RandomForest .joblib models
+
+# Machine learning
+scikit-learn>=1.7,<2    # RandomForestClassifier + model_selection
+optuna>=4.0,<5          # hyper-parameter optimisation (scripts/train_baseline.py)
+
+# Time-series I/O
+aeon>=1.3               # load_from_tsfile for the UCR .ts archive
+
+# OBDD backend (binary majority oracle). Requires the CUDD extension module
+# dd.cudd; the PyPI wheels of dd ship it prebuilt. If your platform has no
+# wheel, build it with:  pip install dd --no-binary dd
+dd>=0.6.0
+
+# Tableau refinement coordination
+redis>=5.2              # the tableau worker uses a Redis-backed work queue
+
+# Dashboard (scripts/dashboard.py)
+dash>=2.18,<3
+plotly>=6.0
+
+# ---------------------------------------------------------------------------
+# Max-iAXp baseline (third_party/RFxpl) — OPTIONAL.
+# Only needed to (re)run scripts/max_iaxp/*; the factory snapshot already
+# ships the baseline results. Gurobi additionally needs a valid licence.
+# ---------------------------------------------------------------------------
+gurobipy>=11.0          # MILP solver used by the Max-iAXp / RFxpl baseline
+python-sat>=1.8         # SAT/MaxSAT oracle (pysat)
+anytree>=2.13
+namedlist>=1.8
+six>=1.17

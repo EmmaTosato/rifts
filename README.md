@@ -36,6 +36,7 @@ sample.
 ```
 rifts-local/
 ├── README.md                  this file
+├── requirements.txt           pinned Python dependencies (core + optional baseline)
 ├── download_ucr.sh            fetch the UCR Univariate 2018 archive
 ├── init.sh                    prepare current-state/ from factory-setting/ or from scratch
 ├── dataset/
@@ -59,16 +60,46 @@ rifts-local/
 
 ## Prerequisites
 
-* Python 3.10 (the algorithm core, the sweeps, the dashboard).
+* Python 3.10–3.12 (the algorithm core, the sweeps, the dashboard).
 * `bash`, `curl`, `unzip`, `rsync` on `PATH`.
 * Graphviz `dot` on `PATH` if you want the PNG export of the Hasse diagram
   from the dashboard.
-* A MILP solver visible to PuLP (CBC, the PuLP default, is bundled with the
-  package; Gurobi works automatically when its license is set).
+* The core CEGAR vote-MILP uses `scipy.optimize.milp` (the HiGHS solver
+  bundled with SciPy) — no extra solver install is needed. **Gurobi**
+  (`gurobipy` + a valid licence) is required only to re-run the optional
+  Max-iAXp baseline under `third_party/RFxpl/`.
+* The binary majority oracle is built on `dd.cudd` (the CUDD extension of the
+  `dd` package). The PyPI `dd` wheels ship `dd.cudd` prebuilt; if no wheel
+  exists for your platform, build it with `pip install dd --no-binary dd`.
 
 ## Setup
 
-### 1. Fetch the UCR archive
+### 1. Install Python dependencies
+
+Use a fresh virtual environment so the pinned versions do not collide with
+other projects:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+`requirements.txt` installs the core stack (numpy, scipy, pandas,
+scikit-learn, joblib, aeon, dd, optuna, redis, dash, plotly). Its last block
+holds the **optional** Max-iAXp baseline dependencies (`gurobipy`,
+`python-sat`, `anytree`, `namedlist`, `six`); you only need them — and a
+Gurobi licence — if you intend to re-run `scripts/max_iaxp/*`. The bundled
+factory snapshot already contains the baseline results, so a default run can
+skip them.
+
+The tableau refinement phase coordinates its work queue through **Redis**, so
+a reachable Redis server is needed when running
+`scripts/refinement_doubling_sweeper.py` (the greedy sweep and the dashboard
+do not require it).
+
+### 2. Fetch the UCR archive
 
 ```sh
 ./download_ucr.sh
@@ -78,7 +109,7 @@ Downloads `Univariate2018_ts.zip` (~125 MB) into `dataset/`, unpacks it into
 `dataset/Univariate_ts/` (~800 MB, 128 sub-folders) and removes the zip.
 Idempotent: subsequent calls detect the populated tree and exit silently.
 
-### 2. Populate `current-state/`
+### 3. Populate `current-state/`
 
 `current-state/` is the working folder that every script reads from and
 writes to. It is created by `init.sh`; both `factory-setting/` and `dataset/`
