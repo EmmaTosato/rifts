@@ -50,7 +50,10 @@ from drifts.cegar_majority import CEGARMajority
 from drifts.obdd import BootstrapConfig, OBDDContext
 from drifts.sklearn_io import from_sklearn
 
-from load_ucr import load_dataset  # noqa: E402
+try:
+    from load_local import load_dataset
+except ImportError:
+    from load_ucr import load_dataset  # noqa: E402
 
 
 MAXIAXP = REPO / "max-iaxp"

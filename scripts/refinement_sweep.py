@@ -55,7 +55,10 @@ from drifts.profile import forest_profile
 from drifts.sklearn_compat import Def3Forest
 from drifts.sklearn_io import from_sklearn
 
-from load_ucr import load_dataset  # noqa: E402
+try:
+    from load_local import load_dataset
+except ImportError:
+    from load_ucr import load_dataset  # noqa: E402
 
 
 MODELS = REPO / "models"
